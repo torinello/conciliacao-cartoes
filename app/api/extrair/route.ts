@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     const buffer = await file.arrayBuffer()
     const base64 = Buffer.from(buffer).toString('base64')
 
-    const prompt = `Extraia todos os lançamentos desta fatura de cartão de crédito brasileira. Para cada lançamento retorne JSON com: data (DD/MM/AAAA), cartao, titular, estabelecimento, descricao, valor (float), tipo (Pessoal/Empresa), cobranca_terceiros (Sim/Não), nome_terceiro, descontar_de, obs, mes_referencia (MM/AAAA), fatura_origem. Ignore pagamentos e créditos. Retorne SOMENTE array JSON válido.`
+    const prompt = `Extraia todos os lançamentos desta fatura de cartão de crédito brasileira. Para cada lançamento retorne JSON com: data (DD/MM/AAAA), cartao (ex: "Bradesco *4933"), titular (nome completo), estabelecimento (nome exato), descricao (categoria resumida), valor (número float), tipo ("Pessoal" ou "Empresa"), cobranca_terceiros ("Sim" ou "Não"), nome_terceiro (se adicional, senão ""), descontar_de ("Pessoal" por padrão), obs (parcela X/Y, IOF, etc), mes_referencia (mês/ano de VENCIMENTO da fatura no formato "MM/AAAA" — exemplo: se vence em 05/2026 retorne "05/2026"), fatura_origem (banco + número cartão). Ignore pagamentos e créditos. Retorne SOMENTE array JSON válido.`
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
