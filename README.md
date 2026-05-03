@@ -114,3 +114,4 @@ conciliacao-app/
 | Anthropic API | ~R$ 0,10 por fatura lida | Pagamento por uso |
 
 Para uso pessoal (2-4 faturas/mês), o custo mensal fica abaixo de R$ 1,00.
+
