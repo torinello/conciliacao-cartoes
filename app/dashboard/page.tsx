@@ -8,6 +8,7 @@ type ViewMode = 'dashboard' | 'lancamentos' | 'pendentes' | 'regras'
 
 export default function Dashboard() {
   const [authed, setAuthed]     = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
   const [senhaInput, setSenha]  = useState('')
   const [senhaErro, setErro]    = useState(false)
   const [view, setView]         = useState<ViewMode>('dashboard')
@@ -169,9 +170,18 @@ export default function Dashboard() {
 
   return (
     <div style={{minHeight:'100vh', background:'var(--bg)'}}>
+      {/* Mobile header */}
+      <div className="mobile-header">
+        <button onClick={() => setMenuOpen(true)} style={{background:'none', border:'none', cursor:'pointer', fontSize:22, color:'var(--text)', padding:4}}>☰</button>
+        <span style={{fontFamily:'var(--font-display)', fontSize:16, color:'var(--brand)'}}>Conciliação</span>
+      </div>
+
+      {/* Mobile overlay */}
+      <div className={`mobile-overlay${menuOpen ? ' open' : ''}`} onClick={() => setMenuOpen(false)} />
+
       <div style={{display:'flex', minHeight:'100vh'}}>
         {/* Sidebar */}
-        <aside style={{width:220, background:'var(--surface)', borderRight:'1px solid var(--border)', padding:'24px 0', display:'flex', flexDirection:'column', gap:4, flexShrink:0}}>
+        <aside className={`sidebar${menuOpen ? ' open' : ''}`} style={{width:220, background:'var(--surface)', borderRight:'1px solid var(--border)', padding:'24px 0', display:'flex', flexDirection:'column', gap:4, flexShrink:0}}>
           <div style={{padding:'0 20px 20px', borderBottom:'1px solid var(--border)', marginBottom:8}}>
             <div style={{fontFamily:'var(--font-display)', fontSize:18, color:'var(--brand)', lineHeight:1.2}}>Conciliação</div>
             <div style={{fontSize:11, color:'var(--text2)', marginTop:2}}>Cartões empresa & pessoal</div>
@@ -182,7 +192,7 @@ export default function Dashboard() {
             ['pendentes',   '⏳', `Pendentes${pendentes.length > 0 ? ` (${pendentes.length})` : ''}`],
             ['regras',      '◎', 'Regras'],
           ] as [ViewMode, string, string][]).map(([v, icon, label]) => (
-            <button key={v} onClick={() => setView(v)}
+            <button key={v} onClick={() => { setView(v); setMenuOpen(false) }}
               style={{
                 display:'flex', alignItems:'center', gap:10,
                 padding:'10px 20px', border:'none', cursor:'pointer',
@@ -210,7 +220,7 @@ export default function Dashboard() {
         </aside>
 
         {/* Main */}
-        <main style={{flex:1, padding:32, overflow:'auto'}}>
+        <main className="main-content" style={{flex:1, padding:32, overflow:'auto'}}>
           {status && (
             <div style={{
               padding:'10px 16px', borderRadius:8, marginBottom:20, fontSize:13,
