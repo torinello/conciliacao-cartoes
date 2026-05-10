@@ -116,22 +116,31 @@ export default function Dashboard() {
 
   const meses = [...new Set(lancamentos.map(l => l.mes_referencia).filter(Boolean))].sort().reverse()
   const titulares = [...new Set(lancamentos.map(l => l.titular).filter(Boolean))]
+
+  function ultimos4Cartao(cartao: string): string {
+    if (!cartao) return ''
+    // Remove espaços e pega os últimos 4 caracteres alfanuméricos
+    const clean = cartao.replace(/\s/g, '')
+    const match = clean.match(/[A-Z0-9]{4}$/i)
+    if (match) return match[0].toUpperCase()
+    // fallback: últimos 4 chars
+    return clean.slice(-4).toUpperCase()
+  }
+
   const cartoes = [...new Set(
     lancamentos
       .map(l => l.cartao)
       .filter(Boolean)
-      .map(c => {
-        const digits = c.replace(/\D/g, '')
-        return digits.length >= 4 ? digits.slice(-4) : c
-      })
+      .map(c => ultimos4Cartao(c))
+      .filter(c => c.length === 4)
   )].sort()
 
   const filtered = lancamentos.filter(l => {
-    const ultimos4 = l.cartao ? l.cartao.replace(/\D/g, '').slice(-4) : ''
+    const u4 = ultimos4Cartao(l.cartao || '')
     return (
       (mesesSel.length === 0 || mesesSel.includes(l.mes_referencia)) &&
       (!filterTitular || l.titular === filterTitular) &&
-      (!filterCartao  || ultimos4 === filterCartao) &&
+      (!filterCartao  || u4 === filterCartao) &&
       (!filterTipo    || l.tipo   === filterTipo) &&
       (!filterStatus  || l.status_reembolso === filterStatus)
     )
