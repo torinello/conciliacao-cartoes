@@ -49,9 +49,22 @@ Retorne SOMENTE array JSON válido, sem texto antes ou depois, sem markdown.`
       })
     })
     const data = await response.json()
-    if (data.error) return NextResponse.json({ error: data.error.message }, { status: 500 })
-    const text = data.content.map((b: any) => b.text || '').join('').replace(/```json|```/g,'').trim()
-    const lancamentos = JSON.parse(text)
+    if (data.error) return NextResponse.json({ error: `API error: ${data.error.message}` }, { status: 500 })
+    const rawText = data.content.map((b: any) => b.text || '').join('')
+    const text = rawText.replace(/```json|```/g, '').trim()
+    let lancamentos: any[]
+    try {
+      lancamentos = JSON.parse(text)
+    } catch (parseErr: any) {
+      return NextResponse.json({
+        error: `JSON inválido: ${parseErr.message}. Resposta: ${text.slice(0, 800)}`
+      }, { status: 500 })
+    }
+    if (!Array.isArray(lancamentos)) {
+      return NextResponse.json({
+        error: `Resposta não é array. Conteúdo: ${text.slice(0, 300)}`
+      }, { status: 500 })
+    }
     return NextResponse.json({ lancamentos, total: lancamentos.length })
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 })
