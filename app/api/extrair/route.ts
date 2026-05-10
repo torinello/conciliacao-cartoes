@@ -10,14 +10,14 @@ export async function POST(req: NextRequest) {
 
 REGRAS IMPORTANTES:
 - Ignore completamente: pagamentos recebidos, IOF, estornos, saldo restante, créditos (valores negativos que sejam estornos/pagamentos)
-- Para faturas Nubank: cada linha de transação mostra o número do cartão no formato "•••• XXXX" — use exatamente esse número para o campo cartao, no formato "Nubank •••• XXXX"
-- Se a fatura tiver múltiplos cartões por titular, cada lançamento deve ter o cartão correto daquela linha
-- Para parcelas, inclua a info "Parcela X/Y" no campo obs
-- IOF de compras internacionais: inclua como lançamento separado com estabelecimento "IOF Internacional" e obs com o nome da compra original
+- Para faturas Nubank: o campo "cartao" deve ser SEMPRE "Nubank - [Nome do titular]" (ex: "Nubank - Enrico Torinello"), independente do cartão virtual usado. O número do cartão virtual (•••• XXXX) deve ir no campo "obs" junto com outras informações (ex: "cartão •••• 0105 | Parcela 3/6")
+- Para outros bancos (Bradesco, Itaú, etc): use "Banco •••• XXXX" normalmente
+- Para parcelas, inclua "Parcela X/Y" no campo obs
+- IOF de compras internacionais: inclua como lançamento separado com estabelecimento "IOF Internacional"
 
 Para cada lançamento retorne JSON com:
 - data: string DD/MM/AAAA
-- cartao: string com banco e últimos 4 dígitos (ex: "Nubank •••• 0105", "Bradesco •••• 4933")
+- cartao: "Nubank - [Nome Titular]" para Nubank, ou "Banco •••• XXXX" para outros
 - titular: nome completo do titular do cartão
 - estabelecimento: nome exato do estabelecimento
 - descricao: categoria resumida (Alimentação, Transporte, Assinatura, Viagem, Compras, etc)
@@ -26,9 +26,9 @@ Para cada lançamento retorne JSON com:
 - cobranca_terceiros: "Sim" ou "Não"
 - nome_terceiro: nome se cobrança de terceiros, senão ""
 - descontar_de: "Pessoal" por padrão
-- obs: parcela X/Y, moeda original, ou outras observações relevantes
+- obs: número do cartão virtual + parcela + moeda original (ex: "cartão •••• 0105 | Parcela 3/6")
 - mes_referencia: mês/ano de VENCIMENTO da fatura no formato "MM/AAAA" (ex: se vence em 11 MAI 2026, retorne "05/2026")
-- fatura_origem: banco + número cartão (ex: "Nubank •••• 0105")
+- fatura_origem: mesmo valor que cartao
 
 Retorne SOMENTE array JSON válido, sem texto antes ou depois, sem markdown.`
 
