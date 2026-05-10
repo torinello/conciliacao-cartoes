@@ -18,6 +18,7 @@ export default function Dashboard() {
   const [status, setStatus]     = useState<{msg:string,type:'info'|'success'|'error'}|null>(null)
   const [mesesSel, setMesesSel] = useState<string[]>([])
   const [filterTitular, setFilterTitular] = useState('')
+  const [filterCartao, setFilterCartao]   = useState('')
   const [filterTipo, setFilterTipo]       = useState('')
   const [filterStatus, setFilterStatus]   = useState('')
   const [editRow, setEditRow]   = useState<Lancamento|null>(null)
@@ -115,13 +116,26 @@ export default function Dashboard() {
 
   const meses = [...new Set(lancamentos.map(l => l.mes_referencia).filter(Boolean))].sort().reverse()
   const titulares = [...new Set(lancamentos.map(l => l.titular).filter(Boolean))]
+  const cartoes = [...new Set(
+    lancamentos
+      .map(l => l.cartao)
+      .filter(Boolean)
+      .map(c => {
+        const digits = c.replace(/\D/g, '')
+        return digits.length >= 4 ? digits.slice(-4) : c
+      })
+  )].sort()
 
-  const filtered = lancamentos.filter(l =>
-    (mesesSel.length === 0 || mesesSel.includes(l.mes_referencia)) &&
-    (!filterTitular || l.titular === filterTitular) &&
-    (!filterTipo    || l.tipo   === filterTipo) &&
-    (!filterStatus  || l.status_reembolso === filterStatus)
-  )
+  const filtered = lancamentos.filter(l => {
+    const ultimos4 = l.cartao ? l.cartao.replace(/\D/g, '').slice(-4) : ''
+    return (
+      (mesesSel.length === 0 || mesesSel.includes(l.mes_referencia)) &&
+      (!filterTitular || l.titular === filterTitular) &&
+      (!filterCartao  || ultimos4 === filterCartao) &&
+      (!filterTipo    || l.tipo   === filterTipo) &&
+      (!filterStatus  || l.status_reembolso === filterStatus)
+    )
+  })
 
   const pendentes = lancamentos.filter(l => l.status_reembolso === '⏳ PENDENTE')
 
@@ -261,6 +275,18 @@ export default function Dashboard() {
                 </div>
               </div>
 
+              {/* Filtros titular e cartão */}
+              <div style={{display:'flex', gap:10, flexWrap:'wrap', marginBottom:20}}>
+                <select value={filterTitular} onChange={e => setFilterTitular(e.target.value)} style={{width:180}}>
+                  <option value="">Todos os titulares</option>
+                  {titulares.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+                <select value={filterCartao} onChange={e => setFilterCartao(e.target.value)} style={{width:160}}>
+                  <option value="">Todos os cartões</option>
+                  {cartoes.map(c => <option key={c} value={c}>•••• {c}</option>)}
+                </select>
+              </div>
+
               {/* Métricas */}
               <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(170px,1fr))', gap:12, marginBottom:28}}>
                 {[
@@ -392,6 +418,10 @@ export default function Dashboard() {
                   <select value={filterTitular} onChange={e => setFilterTitular(e.target.value)} style={{width:180}}>
                     <option value="">Todos os titulares</option>
                     {titulares.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                  <select value={filterCartao} onChange={e => setFilterCartao(e.target.value)} style={{width:160}}>
+                    <option value="">Todos os cartões</option>
+                    {cartoes.map(c => <option key={c} value={c}>•••• {c}</option>)}
                   </select>
                   <select value={filterTipo} onChange={e => setFilterTipo(e.target.value)} style={{width:140}}>
                     <option value="">Todos os tipos</option>
