@@ -86,6 +86,16 @@ export default function Dashboard() {
     setLancamentos(prev => prev.filter(l => l.id !== id))
   }
 
+  async function handleDeleteTudo() {
+    if (!confirm(`Apagar TODOS os ${lancamentos.length} lançamentos? Esta ação não pode ser desfeita.`)) return
+    setStatus({ msg: 'Apagando todos os lançamentos...', type: 'info' })
+    for (const l of lancamentos) {
+      await fetch('/api/lancamentos', { method: 'DELETE', headers: {'Content-Type':'application/json'}, body: JSON.stringify({id: l.id}) })
+    }
+    setLancamentos([])
+    setStatus({ msg: '✓ Todos os lançamentos foram apagados', type: 'success' })
+  }
+
   async function handleSaveEdit() {
     if (!editRow) return
     const updated = {
@@ -115,7 +125,8 @@ export default function Dashboard() {
   }
 
   const meses = [...new Set(lancamentos.map(l => l.mes_referencia).filter(Boolean))].sort().reverse()
-  const titulares = [...new Set(lancamentos.map(l => l.titular).filter(Boolean))]
+  const toTitleCase = (s: string) => s.trim().toLowerCase().replace(/\b\w/g, c => c.toUpperCase())
+  const titulares = [...new Set(lancamentos.map(l => l.titular).filter(Boolean).map(toTitleCase))].sort()
 
   function ultimos4Cartao(cartao: string): string {
     if (!cartao) return ''
@@ -139,7 +150,7 @@ export default function Dashboard() {
     const u4 = ultimos4Cartao(l.cartao || '')
     return (
       (mesesSel.length === 0 || mesesSel.includes(l.mes_referencia)) &&
-      (!filterTitular || l.titular === filterTitular) &&
+      (!filterTitular || toTitleCase(l.titular || "") === filterTitular) &&
       (!filterCartao  || u4 === filterCartao) &&
       (!filterTipo    || l.tipo   === filterTipo) &&
       (!filterStatus  || l.status_reembolso === filterStatus)
@@ -238,6 +249,10 @@ export default function Dashboard() {
             <button className="btn" style={{width:'100%', justifyContent:'center', marginTop:8, fontSize:12}}
               onClick={() => { sessionStorage.removeItem('auth'); setAuthed(false) }}>
               Sair
+            </button>
+            <button className="btn" style={{width:'100%', justifyContent:'center', marginTop:8, fontSize:12, color:'var(--red)'}}
+              onClick={handleDeleteTudo}>
+              🗑 Apagar tudo
             </button>
           </div>
         </aside>
